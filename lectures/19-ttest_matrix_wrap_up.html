@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Comparing two means and fall term wrap-up</title>
+    <meta charset="utf-8" />
+    <script src="libs/header-attrs-2.4/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/rladies.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/rladies-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="my-theme.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Comparing two means and fall term wrap-up
+
+---
+
+
+
+## Annoucements
+
+* Thank you, Max!
+* The GEs and I are available by appointment through finals week. 
+
+* Reminder: Homework 3 due next Friday (9am)
+  * Grading starts this weekend: expect corrections within 24 hours.
+  
+---
+## Last time...
+
+* Effect sizes and assumptions of _t_-tests
+
+  * Cohen's D
+  * Overlap of population distributions
+  
+  * Independence
+  * Homogeneity of variance
+  * Normality
+  
+---
+
+## Example
+
+In the country of Panem, there are 13 (or 14?) distinct geographic districts, each of which specializes in a particular trade or industry. The Capital is the most technologically advanced and is home to wealthy elites (CEOs, politicians, university professors, etc). District 12 is a coal-mining district. 
+
+Researchers asked whether these two geographic regions differ in their exposure to daily life stress. Citizens of these districts were randomly sampled and completed the [Survey of Recent Life Experiences](https://link.springer.com/article/10.1007/BF00848327), which measures daily hassles. Scores can range from 0 (no daily hassles) to 160 (constant daily hassles).
+
+What are the null and alternative hypotheses? What kind of test will we run?
+
+---
+
+| Capital | District 12 |
+|:-------:|:-----------:|
+| 12      | 100         |
+| 72      | 92         |
+| 81      | 110         |
+| 69      | 99         |
+| 44      | 80         |
+| 61      | 96         |
+| 55      | 102         |
+| 43      | 98         |
+| 60      | 71         |
+| 52      | 86         |
+
+---
+
+```r
+panem = data.frame(
+  district = rep(c("Capital", "12"), each = 10),
+  srle = c(
+    12,72,81,69,44,61,55,43,60,52,
+    100,92,110,99,80,96,102,98,71,86)
+)
+
+psych::describeBy(panem, group = panem$district)
+```
+
+```
+## 
+##  Descriptive statistics by group 
+## group: 12
+##           vars  n mean   sd median trimmed  mad min max range  skew kurtosis
+## district*    1 10  1.0  0.0      1    1.00 0.00   1   1     0   NaN      NaN
+## srle         2 10 93.4 11.5     97   94.12 7.41  71 110    39 -0.54    -0.87
+##             se
+## district* 0.00
+## srle      3.64
+## ------------------------------------------------------------ 
+## group: Capital
+##           vars  n mean    sd median trimmed   mad min max range  skew kurtosis
+## district*    1 10  1.0  0.00    1.0       1  0.00   1   1     0   NaN      NaN
+## srle         2 10 54.9 19.28   57.5      57 18.53  12  81    69 -0.78     -0.1
+##            se
+## district* 0.0
+## srle      6.1
+```
+
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+---
+.pull-left[
+**Capital**  
+`\(N = 10\)`  
+`\(M = 93.40\)`  
+`\(SD = 11.50\)`]
+
+.pull-right[
+**District 12**  
+`\(N = 10\)`  
+`\(M = 54.90\)`  
+`\(SD = 19.28\)`]
+
+* Set an alpha-level. 
+
+* Define sampling distribution. 
+
+`$$\mu_D = \mu_0$$`
+`$$\sigma_D = ??$$`
+--
+
+The standard error of the difference in means is the `\(\frac{\text{population standard deviation}}{\sqrt{N}}\)`.
+
+But we have two sample sizes, and we have two estimates of the population SD.
+
+---
+
+
+
+
+Calculate pooled variance (to get our best estimate of the population variance):
+
+`$$\large{\hat{\sigma}^2_p = \frac{(N_1-1)\hat{\sigma}^2_1 + (N_2-1)\hat{\sigma}^2_2}{N_1+N_2-2}}$$`
+`$$\large{\hat{\sigma}^2_p = \frac{(10-1)11.50^2 + (10-1)19.28^2}{10+10-2}} = 251.96$$`
+Don't forget to take the square root to get our SD estimate.
+
+$$\large{\hat{\sigma}_p = \sqrt{\hat{\sigma}^2_p} = \sqrt{251.96} = 15.87} $$
+
+---
+
+
+
+
+Deal with two sample sizes by weighting by `\(\sqrt{\frac{1}{N_1} + \frac{1}{N_2}}\)` instead of `\(\frac{1}{\sqrt{N}}\)`.
+
+`$$\sigma_D = \sigma_p\sqrt{\frac{1}{N_1} + \frac{1}{N_2}} = 15.87\sqrt{\frac{1}{10} + \frac{1}{10}} = 7.10$$`
+
+
+
+Calculate our _t_-statistic:
+
+`$$t = \frac{(\bar{X}_1 - \bar{X}_2) - (\mu_1 - \mu_2)}{\sigma_D} = \frac{93.40 - 54.90 - 0}{7.10} = 5.42$$`
+---
+
+
+```r
+t.test(srle~district, data = panem, var.equal = T)
+```
+
+```
+## 
+## 	Two Sample t-test
+## 
+## data:  srle by district
+## t = 5.4235, df = 18, p-value = 3.748e-05
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  23.58608 53.41392
+## sample estimates:
+##      mean in group 12 mean in group Capital 
+##                  93.4                  54.9
+```
+
+---
+
+
+
+Is this a large difference? 
+
+`\(d = \frac{\bar{X}_1 - \bar{X}_2}{\sigma_p} = \frac{93.40 - 54.90 - 0}{15.87} = 2.43\)`
+
+
+```r
+(cohensd = lsr::cohensD(srle~district, data = panem, method = "pooled"))
+```
+
+```
+## [1] 2.425459
+```
+
+---
+
+How much power did we have to detect this effect?
+
+![](19-ttest_matrix_wrap_up_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
+---
+
+We can calculate this by hand: remember, this is the area under our alternative distribution that is from the critical value and farther away from our mean.
+
+
+```r
+(critical_value = qnorm(mean = 0, 
+                        sd = 7.098, 
+                        p = .025, 
+                        lower.tail = F))
+```
+
+```
+## [1] 13.91182
+```
+
+```r
+pnorm(q = critical_value, 
+      mean = 38.5, 
+      sd = 7.098, 
+      lower.tail = F)
+```
+
+```
+## [1] 0.999734
+```
+
+---
+
+But you don't need to do things by hand:
+
+
+```r
+library(pwr)
+pwr.t.test(n = 10, 
+           d = cohensd, 
+           sig.level = .05, 
+           type = "two")
+```
+
+```
+## 
+##      Two-sample t test power calculation 
+## 
+##               n = 10
+##               d = 2.425459
+##       sig.level = 0.05
+##           power = 0.9992019
+##     alternative = two.sided
+## 
+## NOTE: n is number in *each* group
+```
+
+The arguments for the `pwr.t.test` function are sample size (`n`), effect size (`d`), alpha level (`sig.level`), and power (`power`). Give it any three, and it will return the fourth!
+
+---
+
+
+
+This is very useful. For example, if we wanted to replicate this study, how many participants would we need? We can use the same function to find out:
+
+
+```r
+pwr.t.test(
+  d = cohensd,
+  sig.level = .05, 
+  power = .90, 
+  type = "two"
+)
+```
+
+```
+## 
+##      Two-sample t test power calculation 
+## 
+##               n = 4.772693
+##               d = 2.425459
+##       sig.level = 0.05
+##           power = 0.9
+##     alternative = two.sided
+## 
+## NOTE: n is number in *each* group
+```
+
+---
+
+Did we meet the assumptions of this test?
+
+--
+
+
+```r
+car::leveneTest(srle~district, data = panem, center = "mean")
+```
+
+```
+## Levene's Test for Homogeneity of Variance (center = "mean")
+##       Df F value Pr(&gt;F)
+## group  1  1.1165 0.3047
+##       18
+```
+
+--
+
+
+```r
+shapiro.test(x = panem$srle)
+```
+
+```
+## 
+## 	Shapiro-Wilk normality test
+## 
+## data:  panem$srle
+## W = 0.94824, p-value = 0.3411
+```
+
+![](19-ttest_matrix_wrap_up_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
+
+---
+## Remember matrix algebra?
+
+In week 3, we covered the mechanics of matrix algebra, including addition/subtraction and multiplication. 
+
+The important takeaway was that we can use tranformation matrices to create linear combinations of rows and columns. These linear combinations help us to summarize datasets in valuable ways.
+
+`$$y = 5x_1 + \frac{1}{7}x_2 - 12x_3$$`
+
+`$$\large \mathbf{M} = \left[\begin{array}
+{r}
+5  \\
+\frac{1}{7}  \\
+-12  \\
+\end{array}\right]$$`
+
+---
+
+Transformation matrices applied to a data matrix using *pre*-multiplication creates linear combinations of rows -- this allows us to aggregate observations into meaningful "groups", like control/treatment, freshman/senior, time 1/time 2.
+
+Transformation matrices applied to a data matrix using *post*-multiplication creates linear combinations of columns -- this allows us to aggregate variables into meaningful indices, like summing variables to get the number correct on a test or finding the average response to a set of items in a scale.
+
+Using both pre- and post-multiplication _together_ is an efficient way of asking questions, like:
+* are average levels of the CESD lower after an intervention compared to before?
+* what is the average score on each of 4 quizzes?
+
+---
+
+## Example
+
+
+
+
+```r
+fake_data
+```
+
+```
+##   ID group item1 item2 item3 item4
+## 1  1     A     7     1     5     1
+## 2  2     B     7     6     7     4
+## 3  3     B     7     5     9     3
+## 4  4     A     4     1     4    -1
+## 5  5     A     5     2     5     2
+## 6  6     B     7     3     7     4
+## 7  7     A     6     3     6     2
+## 8  8     B     9     3     9     4
+```
+
+
+```r
+T_pre = matrix(
+  c( 1,0,0,1,1,0,1,0,
+     0,1,1,0,0,1,0,1), 
+  byrow = T, nrow = 2
+)
+```
+
+---
+
+
+```r
+T_pre %*% as.matrix(fake_data[,-c(1:2)])
+```
+
+```
+##      item1 item2 item3 item4
+## [1,]    22     7    20     4
+## [2,]    30    17    32    15
+```
+
+```r
+.25*T_pre %*% as.matrix(fake_data[,-c(1:2)])
+```
+
+```
+##      item1 item2 item3 item4
+## [1,]   5.5  1.75     5  1.00
+## [2,]   7.5  4.25     8  3.75
+```
+
+---
+
+
+```r
+T_post = matrix(
+  c(1/4,
+    1/4,
+    1/4,
+    1/4),
+  ncol = 1
+)
+
+as.matrix(fake_data[,-c(1:2)]) %*% T_post
+```
+
+```
+##      [,1]
+## [1,] 3.50
+## [2,] 6.00
+## [3,] 6.00
+## [4,] 2.00
+## [5,] 3.50
+## [6,] 5.25
+## [7,] 4.25
+## [8,] 6.25
+```
+
+---
+
+
+```r
+.25*T_pre %*% as.matrix(fake_data[,-c(1:2)]) %*% T_post
+```
+
+```
+##        [,1]
+## [1,] 3.3125
+## [2,] 5.8750
+```
+
+---
+
+## *t*-tests and Matrix Algebra
+
+### Independent-samples *t*-test
+
+At it's heart, the independent samples *t*-test proposes a model in which our best guess of a person's score is the mean of their district. 
+
+We can use **linear combinations** of both rows and columns to generate these "best guess" scores. 
+
+---
+Assume your data take the following form:
+
+.pull-left[
+
+`$$\large \mathbf{X} = \left(\begin{array}
+{rr}
+\text{district} &amp; \text{SRLE} \\
+Cap &amp; 12  \\
+D12 &amp; 100  \\
+\vdots &amp; \vdots  \\
+Cap &amp; 72 
+\end{array}\right)$$`
+]
+
+.pull-right[
+What are your linear combinations of columns?
+
+
+What are your linear combinations of rows?
+]
+
+--
+
+**Linear combinations of columns:** 
+
+`$$\large \mathbf{T_C} = \left(\begin{array}
+{r}
+0 \\
+1
+\end{array}\right)$$`
+
+---
+Assume your data take the following form:
+
+.pull-left[
+
+`$$\large \mathbf{X} = \left(\begin{array}
+{rr}
+\text{district} &amp; \text{SRLE} \\
+Cap &amp; 12  \\
+D12 &amp; 100  \\
+\vdots &amp; \vdots  \\
+Cap &amp; 72 
+\end{array}\right)$$`
+]
+
+.pull-right[
+What are your linear combinations of columns?
+
+
+What are your linear combinations of rows?
+]
+
+
+
+**Linear combinations of rows:** 
+
+`$$\mathbf{T_R} = \left(\begin{array}
+{rrrr}
+\frac{1}{N_C} &amp; 0 &amp; \dots &amp; \frac{1}{N_C} \\
+0 &amp; \frac{1}{N_{D12}} &amp; \dots &amp; 0 \\
+\end{array}\right)$$`
+
+---
+
+`$$(T_R)X(T_C) = M$$`
+
+This set of linear combinations calculates the different means of our two districts. That's great! 
+
+
+But there's another way. We can create a single transformation matrix, `\(\large \mathbf{T}\)`, that's very simple:
+
+`$$\mathbf{T} = \left(\begin{array}
+{rr}
+1 &amp; 0 \\
+1 &amp; 1 \\
+\vdots &amp; \vdots  \\
+1 &amp; 0 \\
+\end{array}\right)$$`
+
+Using this matrix, we can solve a different equation:
+
+`$$(T'T)^{-1}T'X = (b)$$`
+In this case, *b* will be a vector with 2 scalars.
+
+---
+
+
+
+```r
+X = panem$srle
+T_mat = matrix(1, ncol = 2, nrow = length(X))
+T_mat[panem$district == "Capital", 2] = 0
+```
+
+```
+##       [,1] [,2]
+##  [1,]    1    0
+##  [2,]    1    0
+##  [3,]    1    0
+##  [4,]    1    0
+##  [5,]    1    0
+##  [6,]    1    0
+##  [7,]    1    0
+##  [8,]    1    0
+##  [9,]    1    0
+## [10,]    1    0
+## [11,]    1    1
+## [12,]    1    1
+## [13,]    1    1
+## [14,]    1    1
+## [15,]    1    1
+## [16,]    1    1
+## [17,]    1    1
+## [18,]    1    1
+## [19,]    1    1
+## [20,]    1    1
+```
+
+---
+
+`$$(T'T)^{-1}T'X = (b)$$`
+
+
+```r
+solve(t(T_mat) %*% T_mat) %*% t(T_mat) %*% X
+```
+
+```
+##      [,1]
+## [1,] 54.9
+## [2,] 38.5
+```
+
+What do these numbers represent?
+
+???
+
+`$$\Large \bar{X} = T\mathbf{X} = 1'\mathbf{X}(1'1)^{-1}$$`
+
+---
+
+### Standard errors
+
+We can use the same matrix, `\(\large \mathbf{T}\)` , to transform the variance-covariance into standard errors.
+
+`$$\large  \text{Var}_b = \hat{\sigma}^2(T'T)^{-1}$$`
+
+We use the pooled variance, instead of the empirical estimate. 
+
+```r
+var1 = var(panem$srle[panem$district == "Capital"])
+var2 = var(panem$srle[panem$district == "12"])
+n1 = length(which(panem$district == "Capital"))
+n2 = length(which(panem$district == "12"))
+pooled = ((n1-1)*var1 +(n2-1)*var2)/(n1+n2-2)
+```
+
+
+```r
+pooled * solve(t(T_mat) %*% T_mat)
+```
+
+```
+##           [,1]      [,2]
+## [1,]  25.19611 -25.19611
+## [2,] -25.19611  50.39222
+```
+
+---
+
+.pull-left[
+
+```r
+solve(t(T_mat) %*% T_mat) %*% t(T_mat) %*% X
+```
+
+```
+##      [,1]
+## [1,] 54.9
+## [2,] 38.5
+```
+]
+
+.pull-right[
+
+```r
+pooled * solve(t(T_mat) %*% T_mat)
+```
+
+```
+##           [,1]      [,2]
+## [1,]  25.19611 -25.19611
+## [2,] -25.19611  50.39222
+```
+]
+
+--
+
+.pull-left[
+`$$t_{b_1} = \frac{54.9}{\sqrt{25.196}} = 10.937$$`
+
+
+
+This is a one-sample *t*-test comparing the mean of the reference group to 0.
+
+]
+
+--
+
+.pull-right[
+`$$t_{b_2} = \frac{38.5}{\sqrt{50.392}} = 5.423$$`
+
+
+This is an independent-samples *t*-test comparing the mean of the two groups
+]
+
+---
+
+## *t*-tests and Matrix Algebra
+
+### Paired-samples *t*-test
+
+The algebra for the paired-samples *t*-test is actually quite simple, because the difference score is a very simple weighted linear combination:
+
+`$$LC_i = W_1X_{1,i} + W_2X_{2,i} + \dots + W_kX_{k,i}$$`
+
+The variance of a weighted linear combination is a function of the weights (W) applied the variance-covariance matrix:
+
+.pull-left[
+
+`$$\large \left[\begin{array}
+{rr} 
+W_1 &amp; W_2
+\end{array}\right]
+\left[\begin{array}
+{rr} 
+\hat{\sigma}^2_{X_1} &amp; \hat{\sigma}_{X_1X_2} \\
+\hat{\sigma}_{X_2X_1} &amp; \hat{\sigma}^2_{X_1}
+\end{array}\right]
+\left[\begin{array}
+{r} 
+W_1 \\
+W_2
+\end{array} 
+\right]$$`
+
+]
+
+???
+What is the linear combination?
+
+Difference = At - Away
+
+Difference = (1)At + (-1)Away
+
+---
+
+
+
+
+```r
+X = as.matrix(gulls[, c("At", "Away")])
+W = c(1, -1)
+```
+
+.pull-left[
+Difference scores:
+
+
+```r
+X %*% W
+```
+
+```
+##       [,1]
+##  [1,]  175
+##  [2,]  220
+##  [3,]    3
+##  [4,]   -3
+##  [5,]   34
+##  [6,]   21
+##  [7,]   -9
+##  [8,]    1
+##  [9,]  282
+## [10,]  294
+## [11,]    3
+## [12,]    1
+## [13,]   -2
+## [14,]   -7
+## [15,]  294
+## [16,]   47
+## [17,]  134
+## [18,]  -42
+## [19,]  133
+```
+]
+
+.pull-right[
+Standard deviation of difference scores:
+
+
+```r
+(V_X = cov(X))
+```
+
+```
+##             At     Away
+## At   18269.760 3719.675
+## Away  3719.675 2590.468
+```
+
+```r
+(V_Difference = W %*% V_X %*% W)
+```
+
+```
+##          [,1]
+## [1,] 13420.88
+```
+
+```r
+sqrt(V_Difference)
+```
+
+```
+##          [,1]
+## [1,] 115.8485
+```
+
+]
+
+---
+
+### Matrix Algebra
+
+There is nothing particularly special about difference scores `\((W = 1, -1)\)`. Any conceptually sensible weights can be used to create  linear combinations, which can then be used in hypothesis tests:
+
+`$$t = \frac{\bar{LC}-\mu}{\frac{\hat{\sigma}_{LC}}{\sqrt{N}}}$$`
+
+In other words: you can test **any linear combination** of variables against **any null hypothesis** using this formula. You are not limited to differences in means or nil hypotheses `\(\large (\mu=0)\)`.
+
+---
+
+Building and testing linear combinations of variables is nearly everything we'll do in PSY 612. 
+
+Most statistical methods propose some model, represented by linear combinations, and then tests how likely we would be to seee data like ours under that model. 
+
+* one-sample *t*-tests propose that a single value represents all the data
+
+* *t*-tests propose a model that two means differ 
+
+* more complicated models propose that some comination of variables, categorical and continuous, govern the patterns in the data
+
+---
+
+We'll spend most of PSY 612 talking about different ways of building and testing models, but at their heart, all will use a combination of 
+
+
+`$$(T'T)^{-1}T'X = (b)$$`
+
+`$$LC_i = W_1X_{1,i} + W_2X_{2,i} + \dots + W_kX_{k,i}$$`
+
+--
+
+As we think about where we're going next term, it will be helpful to put some perspective on what we've covered already.
+
+---
+
+background-image: url("images/wrap-up1.jpeg")
+background-size: contain
+
+---
+
+background-image: url("images/wrap-up2.jpeg")
+background-size: contain
+
+---
+
+background-image: url("images/wrap-up3.jpeg")
+background-size: contain
+
+---
+
+background-image: url("images/wrap-up4.jpeg")
+background-size: contain
+
+---
+
+background-image: url("images/wrap-up5.jpeg")
+background-size: contain
+
+---
+
+background-image: url("images/wrap-up6.jpeg")
+background-size: contain
+
+---
+
+Because we're using probability theory, we have to assume independence between trials.
+
+* independent rolls of the die
+* independent draws from a deck of cards
+* independent... tests of hypotheses?
+
+
+What happens when our tests are not independent of one another?
+
+* For example, what happens if I only add a covariate to a model if the original covariate-less model is not significant?
+
+* Similarly, what happens if I run multiple tests on one dataset?
+
+---
+
+The issue of independence between tests has long been ignored by scientists. It was only when we were confronted with impossible-to believe results (people have ESP, listening to "When I'm Sixty-Four" by The Beatles makes you younger) that we started to doubt our methods.
+
+And an explosion of fraud cases made us revisit our incentive structures. Maybe we weren't producing the best science we could...
+
+.pull-left[
+![](images/replicability2.png)
+]
+
+.pull-right[
+
+Since then (2011), there's been greater push to revisit "known" effects in psychology and related fields, with sobering results. 
+
+The good news is that things seem to be changing, rapidly.
+]
+
+---
+
+Independence isn't the only assumption we have to make to conduct hypothesis tests. 
+
+We also make assumptions about the underlying populations.
+
+![](images/null.png)
+.pull-left[Normality]
+.pull-right[Homogeneity of variance]
+
+&amp;nbsp;&amp;nbsp;
+Sometimes we fail to meet those assumptions, in which case we may have to change course. 
+
+
+.small[Picture credit: Cameron Kay]
+
+---
+
+How big of a violation of the assumption is too much?
+
+--
+
+* It depends. 
+
+
+How do you know your operation X measures your construct A well?
+
+--
+
+* You don't. 
+
+What should alpha be?
+
+--
+
+* You tell me. 
+
+
+
+---
+
+.pull-left[
+Statistics is not a recipe book. It's a tool box. And there are many ways to use your tools.
+
+Your job is to 
+1. Understand the tools well enough to know how and when to use them, and
+2. Be able to justify your methods.
+
+]
+
+.pull-right[
+![](images/tools.jpg)
+]
+
+It's worth adding to that, as a graduate student, you're long past the days of trying to memorize and regurgitate information in a class. You're training to be an independent scholar. For that reason, we've focused on helping you figure things out for yourself, which will be a far more useful skill than learning less material more deeply now. 
+
+Teach a scientist to fish, or something like that.
+---
+
+class: inverse
+
+## Next time...
+
+PSY 612 in 2021
+
+(But first):
+* Quiz 9 now 
+* Journal 10 due Monday night
+
+
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
